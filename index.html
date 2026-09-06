@@ -92,6 +92,22 @@
 
     .btn svg { width: 22px; height: 22px; fill: currentColor; }
 
+    .hint {
+      font-size: 14px;
+      color: #90a0b0;
+      margin: 22px 0 0;
+    }
+
+    .hint button {
+      font: inherit;
+      color: #2aabee;
+      background: none;
+      border: 0;
+      padding: 0;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
     @media (max-width: 480px) {
       .card { padding: 36px 24px; }
       h1 { font-size: 23px; }
@@ -110,12 +126,62 @@
       <li>кейси та особистий досвід</li>
     </ul>
 
-    <a class="btn" href="https://t.me/+eh5fYWmZDxxhMjFi" target="_blank" rel="noopener">
+    <a class="btn" id="tg" href="https://t.me/+eh5fYWmZDxxhMjFi" target="_blank" rel="noopener">
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/>
       </svg>
       Перейти в телеграм
     </a>
+
+    <p class="hint">Не відкривається? <button type="button" id="copy">Скопіюйте посилання</button> і вставте його в Telegram.</p>
   </main>
+
+  <script>
+    (function () {
+      var INVITE = 'eh5fYWmZDxxhMjFi';
+      var WEB = 'https://t.me/+' + INVITE;
+      var APP = 'tg://join?invite=' + INVITE;
+      var INTENT = 'intent://join?invite=' + INVITE +
+        '#Intent;scheme=tg;package=org.telegram.messenger;S.browser_fallback_url=' +
+        encodeURIComponent(WEB) + ';end';
+
+      var ua = navigator.userAgent || '';
+      var isAndroid = /Android/i.test(ua);
+      var isIOS = /iPhone|iPad|iPod/i.test(ua);
+
+      document.getElementById('tg').addEventListener('click', function (e) {
+        if (!isAndroid && !isIOS) return;   // на десктопе обычная ссылка работает как есть
+        e.preventDefault();
+
+        if (isAndroid) {
+          window.location.href = INTENT;    // intent сам уведёт в Play Store, если Telegram не стоит
+          return;
+        }
+
+        // iOS: пробуем приложение, через 1.2 с откатываемся на веб-версию
+        var fallback = setTimeout(function () { window.location.href = WEB; }, 1200);
+        document.addEventListener('visibilitychange', function () {
+          if (document.hidden) clearTimeout(fallback);
+        });
+        window.location.href = APP;
+      });
+
+      var copy = document.getElementById('copy');
+      copy.addEventListener('click', function () {
+        var done = function () { copy.textContent = 'Скопійовано ✓'; };
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(WEB).then(done, done);
+        } else {
+          var f = document.createElement('input');
+          f.value = WEB;
+          document.body.appendChild(f);
+          f.select();
+          document.execCommand('copy');
+          document.body.removeChild(f);
+          done();
+        }
+      });
+    })();
+  </script>
 </body>
 </html>
